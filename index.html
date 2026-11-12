@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NetPoly - Monopoli Keamanan Jaringan</title>
+<style>
+:root{--bg:#060a18;--ink:#d8f3ff;--card:#0d1630;--a:#00e5ff;--b:#39ff88;--c:#ffd400;--d:#b026ff;--pk:#ff3d81;--ln:#1d3a6b}
+*{box-sizing:border-box}
+body{margin:0;font-family:Consolas,"Courier New",monospace;color:var(--ink);min-height:100vh;background:var(--bg) linear-gradient(rgba(0,229,255,.06) 1px,transparent 1px) 0 0/34px 34px,linear-gradient(90deg,rgba(0,229,255,.06) 1px,transparent 1px) 0 0/34px 34px}
+h1,h2,h3{margin:.2em 0}
+button{font:inherit;font-weight:700;border:2px solid var(--a);border-radius:10px;padding:10px 18px;font-size:1rem;cursor:pointer;background:#08243a;color:var(--a);box-shadow:0 0 12px rgba(0,229,255,.35)}
+button:hover{background:var(--a);color:#021018}
+button:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+button.alt{border-color:var(--b);color:var(--b);background:#06281a}button.alt:hover{background:var(--b);color:#021008}
+button.gh{border-color:var(--ln);color:var(--ink);background:#101c3a;box-shadow:none;padding:8px 12px;font-size:.9rem}button.gh:hover{background:var(--ln)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--c);outline-offset:2px}
+.screen{display:none;max-width:860px;margin:0 auto;padding:14px}.screen.on{display:block}
+.center{text-align:center}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:18px;box-shadow:0 0 22px rgba(0,229,255,.12)}
+#s-home{text-align:center;padding-top:6vh}
+#s-home h1{font-size:clamp(1.8rem,6vw,3.2rem);color:var(--a);text-shadow:0 0 18px rgba(0,229,255,.7)}
+.meta{color:#8fb4d8;margin:.4em 0 1.2em;font-size:.9rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.pl{display:flex;gap:8px;align-items:center;margin:8px 0}
+.pl input{flex:1;font:inherit;padding:10px;border-radius:8px;border:2px solid var(--ln);background:#050a1a;color:var(--ink);min-width:0}
+.dot{width:22px;height:22px;border-radius:50%;border:2px solid #fff;flex:none;box-shadow:0 0 8px currentColor}
+#board{display:grid;grid-template-columns:repeat(11,1fr);grid-template-rows:repeat(11,1fr);width:100%;max-width:780px;aspect-ratio:1;margin:auto;border:2px solid var(--a);box-shadow:0 0 26px rgba(0,229,255,.5);border-radius:8px;overflow:hidden}
+.t{position:relative;border:1px solid var(--ln);background:#0b1530;display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:0 1px 1px;font-size:clamp(.38rem,1.25vw,.68rem);line-height:1.1;overflow:hidden;text-align:center;min-width:0}
+.t .bar{height:6px;width:100%;display:block}
+.t b{word-break:break-word}.t.co{background:#13234a;font-weight:800}
+.tk{display:flex;flex-wrap:wrap;gap:1px;justify-content:center;min-height:8px}
+.tok{width:clamp(7px,1.9vw,15px);height:clamp(7px,1.9vw,15px);border-radius:50%;border:1.5px solid #fff}
+#mid{grid-row:2/11;grid-column:2/11;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:6px;text-align:center;background:rgba(6,10,24,.85)}
+#mid h2{font-size:clamp(.8rem,2.6vw,1.3rem);margin:0}
+#die{font-size:clamp(1.4rem,5vw,2.6rem);font-weight:800;color:var(--c);text-shadow:0 0 12px rgba(255,212,0,.6)}
+#msg{font-size:clamp(.6rem,1.8vw,.9rem);color:var(--b);min-height:2.4em}
+#mid button{padding:clamp(5px,1.4vw,10px) clamp(10px,3vw,20px);font-size:clamp(.7rem,2vw,1rem)}
+#pls{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin:12px auto;max-width:780px}
+.pc{padding:8px;border:1px solid var(--ln);border-radius:10px;background:var(--card);font-size:.85rem}
+.pc.cur{outline:2px solid var(--a);box-shadow:0 0 12px rgba(0,229,255,.5)}.pc.out{opacity:.4;text-decoration:line-through}
+.modal{position:fixed;inset:0;background:rgba(2,5,15,.82);display:none;align-items:center;justify-content:center;padding:14px;z-index:9}
+.modal.on{display:flex}
+.modal .card{max-width:560px;width:100%;max-height:92vh;overflow:auto;border-color:var(--a)}
+.opt{display:block;width:100%;margin:8px 0;text-align:left;background:#101c3a;color:var(--ink);border-color:var(--ln);box-shadow:none}
+.opt:hover{background:#17306a;color:var(--ink)}
+.opt.ok{background:#0a5c30;border-color:var(--b);color:#fff}.opt.no{background:#6a1230;border-color:var(--pk);color:#fff}
+.lv{display:inline-block;padding:2px 10px;border-radius:6px;background:var(--d);color:#fff;font-size:.8rem}
+.conf{position:fixed;top:-20px;width:10px;height:14px;animation:fall 3s linear forwards;z-index:20}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
+
+<section id="s-home" class="screen on">
+<div style="font-size:4rem" aria-hidden="true">🖧💰🔐</div>
+<h1 id="ttl"></h1><p class="meta" id="info"></p>
+<div class="row"><button id="b-start">Mulai</button><button class="gh" id="b-help">Petunjuk</button></div>
+</section>
+
+<section id="s-setup" class="screen"><div class="card" style="max-width:520px;margin:auto">
+<h2>Pengaturan pemain</h2><p>Jumlah pemain:</p><div class="row" id="cnt"></div><div id="names"></div>
+<div class="row"><button class="gh" id="b-back">Kembali</button><button class="alt" id="b-go">Main!</button></div></div></section>
+
+<section id="s-game" class="screen">
+<div id="board"><div id="mid"><h2 id="ttl2"></h2><div id="rd"></div><div id="die">🎲</div><button id="b-roll">Kocok dadu</button><div id="msg" role="status" aria-live="polite"></div></div></div>
+<div id="pls"></div>
+<div class="row"><button class="gh" id="b-h2">Petunjuk</button><button class="gh" id="b-snd">🔊 Suara</button><button class="gh" id="b-re">Ulang</button><button class="gh" id="b-exit">Keluar</button></div>
+</section>
+
+<div class="modal" id="m-q"><div class="card"><span class="lv" id="qlv"></span><h3 id="qh"></h3><p id="qt" style="font-size:1.1rem"></p><div id="qo"></div><div id="qe"></div><div class="center"><button id="b-next" style="display:none">Lanjutkan</button></div></div></div>
+<div class="modal" id="m-i"><div class="card"><h3 id="mi-t"></h3><div id="mi-b"></div><div class="center"><button id="mi-ok">OK</button></div></div></div>
+
+<script>
+/* ========== KONFIGURASI GURU ========== */
+const sh=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(x=>x[1]);
+// pg(level, soal, [jawabanBenar, salah1, salah2, salah3], pembahasan) -> pilihan diacak otomatis
+const pg=(l,q,o,e)=>{const c=o[0],x=sh(o);return{l,t:"pg",q,o:x,a:x.indexOf(c),e}};
+const bs=(l,q,a,e)=>({l,t:"bs",q,a,e});
+const CONFIG={
+ judul:"NetPoly: Monopoli Keamanan Jaringan",
+ mapel:"Keamanan Jaringan", materi:"NIST CSF, serangan & pertahanan, shortcut", kelas:"Kelas XI TKJ (tingkat menengah-sulit)",
+ koinAwal:1500, gajiMulai:200, maxRonde:12,
+ aset:["Kabel UTP","Kabel Fiber","Switch","Router","Access Point","Repeater","Server Web","Server DNS","Server Mail","Server File","NAS Backup","Printer Jaringan","Kamera CCTV","Modem","Hotspot Lab","VLAN Guru","VLAN Siswa","VLAN Server","DMZ","Load Balancer","Proxy","Firewall","IDS","IPS","VPN Gateway","SIEM","Honeypot","Cloud Backup","Data Center","Ruang NOC"],
+ soal:[
+ pg(2,"Strategi keamanan berlapis, sehingga jika satu pertahanan gagal masih ada lapisan lain, disebut ...",["Defense in depth","Single sign-on","Port forwarding","Load balancing"],"Defense in depth memakai banyak lapisan kontrol."),
+ pg(2,"Pengguna hanya diberi hak akses yang benar-benar dibutuhkan. Ini prinsip ...",["Least privilege","Open access","Full control","Shared account"],"Least privilege memperkecil dampak jika akun diretas."),
+ pg(2,"Kebijakan firewall 'default deny' berarti ...",["Semua lalu lintas diblokir kecuali yang diizinkan","Semua diizinkan kecuali yang dilarang","Firewall dimatikan","Hanya HTTP yang diblokir"],"Default deny lebih aman karena hanya yang diizinkan yang lewat."),
+ pg(3,"Perbedaan utama IPS dibanding IDS adalah ...",["IPS dapat memblokir serangan secara otomatis","IPS hanya mencatat log","IDS memblokir, IPS tidak","Keduanya sama persis"],"IDS mendeteksi dan memberi peringatan, IPS dapat mencegah."),
+ pg(2,"VPN melindungi data yang melewati jaringan publik dengan cara ...",["Membuat terowongan terenkripsi","Menghapus virus","Mempercepat internet","Menyembunyikan password"],"VPN membuat tunnel terenkripsi."),
+ pg(3,"Fungsi hash seperti SHA-256 paling tepat dipakai untuk memeriksa ...",["Integritas data","Kerahasiaan data","Ketersediaan layanan","Kecepatan jaringan"],"Hash berubah jika data diubah, sehingga dipakai untuk integritas."),
+ pg(2,"Menyisipkan perintah SQL lewat kolom input untuk membobol database disebut ...",["SQL Injection","Phishing","ARP Spoofing","Sniffing"],"SQL Injection memanfaatkan input yang tidak divalidasi."),
+ pg(3,"Menyisipkan skrip berbahaya ke halaman web yang dijalankan di browser korban disebut ...",["XSS (Cross-Site Scripting)","DDoS","Brute force","Ransomware"],"XSS menjalankan skrip jahat di browser pengguna."),
+ pg(2,"Penyerang diam-diam berada di tengah komunikasi dua pihak untuk menyadap atau mengubah data disebut ...",["Man-in-the-Middle","Zero-day","Brute force","Defacement"],"MITM menyadap dan dapat memodifikasi komunikasi."),
+ pg(3,"ARP spoofing bekerja dengan cara ...",["Memalsukan pemetaan alamat IP ke MAC","Menebak password","Mengenkripsi file korban","Menutup port server"],"Penyerang meracuni tabel ARP agar trafik lewat dirinya."),
+ pg(2,"DDoS berbeda dari DoS karena serangan berasal dari ...",["Banyak sumber perangkat sekaligus","Satu perangkat saja","Kabel yang rusak","Antivirus"],"DDoS memakai banyak perangkat (botnet)."),
+ pg(3,"Celah keamanan yang belum diketahui vendor dan belum ada patch-nya disebut ...",["Zero-day","Backdoor","Legacy","Hotfix"],"Zero-day dieksploitasi sebelum ada perbaikan."),
+ pg(2,"Autentikasi dua faktor (2FA) yang benar adalah ...",["Password dan kode OTP dari ponsel","Dua password berbeda","Password dua kali","Username dan email"],"2FA menggabungkan dua jenis faktor berbeda."),
+ pg(2,"Port bawaan protokol SSH adalah ...",["22","23","80","443"],"SSH 22, Telnet 23, HTTP 80, HTTPS 443."),
+ pg(2,"Port bawaan HTTPS adalah ...",["443","80","21","53"],"HTTPS memakai port 443."),
+ pg(3,"Protokol yang mengirim data tanpa enkripsi dan sebaiknya diganti SSH untuk akses perangkat adalah ...",["Telnet","SSH","HTTPS","SFTP"],"Telnet mengirim teks biasa, termasuk password."),
+ pg(2,"Port bawaan layanan DNS adalah ...",["53","25","110","3389"],"DNS memakai port 53."),
+ pg(2,"Port bawaan Remote Desktop Protocol (RDP) adalah ...",["3389","22","445","8080"],"RDP memakai port 3389 dan sering diserang jika terbuka ke internet."),
+ pg(3,"Enkripsi asimetris menggunakan ...",["Sepasang kunci publik dan privat","Satu kunci yang sama","Tanpa kunci","Hanya password"],"Kunci publik mengenkripsi, kunci privat mendekripsi."),
+ pg(2,"Malware yang mengenkripsi data korban lalu meminta tebusan adalah ...",["Ransomware","Spyware","Adware","Rootkit"],"Ransomware mengunci data."),
+ pg(2,"Mencoba semua kombinasi password sampai berhasil disebut ...",["Brute force","Phishing","Spoofing","Sniffing"],"Brute force dicegah dengan password kuat dan pembatasan percobaan login."),
+ pg(2,"Phishing yang menyasar individu tertentu dengan pesan yang dipersonalisasi disebut ...",["Spear phishing","Smishing massal","Pharming","Spam"],"Spear phishing ditargetkan pada korban tertentu."),
+ pg(2,"Sistem umpan yang sengaja dibuat rentan untuk mempelajari serangan disebut ...",["Honeypot","Proxy","Gateway","Bridge"],"Honeypot menarik penyerang untuk diamati."),
+ pg(3,"Zona jaringan yang menampung server publik (web/mail) terpisah dari jaringan internal disebut ...",["DMZ","VLAN trunk","VPN","NAT"],"DMZ membatasi dampak jika server publik diretas."),
+ pg(3,"Fitur port security pada switch dipakai untuk ...",["Membatasi MAC address yang boleh terhubung ke port","Mempercepat port","Mengenkripsi kabel","Menambah bandwidth"],"Mencegah perangkat asing mencolok ke port switch."),
+ pg(2,"ACL (Access Control List) berfungsi sebagai ...",["Daftar aturan izin atau tolak lalu lintas","Daftar harga perangkat","Backup konfigurasi","Alat ukur kabel"],"ACL memfilter trafik pada router atau switch."),
+ pg(3,"Pada NIST CSF 2.0, kebijakan keamanan siber dan peran tanggung jawab organisasi termasuk fungsi ...",["Govern","Detect","Recover","Protect"],"Govern mengatur strategi, kebijakan, dan tanggung jawab."),
+ pg(3,"SIEM yang mengumpulkan dan mengorelasikan log untuk menemukan anomali mendukung fungsi ...",["Detect","Identify","Recover","Govern"],"Pemantauan dan korelasi log adalah Detect."),
+ pg(3,"Pelatihan kesadaran keamanan untuk pegawai dan siswa termasuk fungsi ...",["Protect","Respond","Detect","Recover"],"Edukasi pengguna adalah bagian Protect."),
+ pg(3,"Menyusun daftar aset dan menilai risikonya termasuk fungsi ...",["Identify","Protect","Respond","Recover"],"Identify: memahami aset dan risiko."),
+ pg(3,"Server file diubah tanpa izin sehingga nilai berubah. Prinsip CIA yang dilanggar adalah ...",["Integrity","Confidentiality","Availability","Non-repudiation"],"Perubahan tanpa izin melanggar integritas."),
+ pg(3,"Database password pelanggan bocor ke publik. Prinsip CIA yang dilanggar adalah ...",["Confidentiality","Integrity","Availability","Redundancy"],"Kebocoran data melanggar kerahasiaan."),
+ pg(3,"Risiko paling tinggi terjadi bila ...",["Ancaman nyata, kerentanan terbuka, dan aset bernilai tinggi","Aset tidak bernilai","Semua port ditutup","Ada backup lengkap"],"Risiko berasal dari ancaman, kerentanan, dan nilai aset."),
+ pg(2,"Patch management bertujuan untuk ...",["Menutup kerentanan dengan pembaruan rutin","Mempercantik tampilan","Menghapus log","Mengganti kabel"],"Pembaruan menutup celah yang diketahui."),
+ /* shortcut tingkat lanjut */
+ pg(2,"Shortcut Windows untuk mengambil tangkapan layar area tertentu (Snipping Tool) adalah ...",["Win + Shift + S","Ctrl + Shift + S","Alt + Print","Win + S"],"Win + Shift + S membuka Snipping Tool."),
+ pg(2,"Shortcut untuk membuka riwayat clipboard di Windows adalah ...",["Win + V","Ctrl + V","Alt + V","Win + C"],"Win + V menampilkan riwayat clipboard."),
+ pg(2,"Shortcut browser untuk membuka kembali tab yang baru ditutup adalah ...",["Ctrl + Shift + T","Ctrl + T","Ctrl + W","Alt + T"],"Ctrl + Shift + T membuka tab tertutup."),
+ pg(2,"Shortcut Chrome untuk membuka jendela penyamaran (incognito) adalah ...",["Ctrl + Shift + N","Ctrl + N","Ctrl + Shift + P","Alt + N"],"Ctrl + Shift + N membuka incognito."),
+ pg(2,"Shortcut untuk membuka kotak dialog Run adalah ...",["Win + R","Win + E","Win + X","Win + I"],"Win + R: Run, dipakai mengetik cmd atau ncpa.cpl."),
+ pg(2,"Shortcut untuk membuka File Explorer adalah ...",["Win + E","Win + F","Win + X","Win + M"],"Win + E: Explorer."),
+ pg(2,"Shortcut untuk membuka Settings Windows adalah ...",["Win + I","Win + S","Win + A","Win + K"],"Win + I: Settings."),
+ pg(3,"Shortcut untuk menghapus file permanen tanpa melalui Recycle Bin adalah ...",["Shift + Delete","Ctrl + Delete","Alt + Delete","Win + Delete"],"Shift + Delete melewati Recycle Bin."),
+ pg(3,"Pada Terminal Linux, Ctrl + C berfungsi untuk ...",["Menghentikan proses yang sedang berjalan","Menyalin teks","Menutup terminal","Membersihkan layar"],"Ctrl + C mengirim sinyal interupsi (SIGINT)."),
+ pg(3,"Pada Terminal Linux, shortcut untuk membersihkan layar adalah ...",["Ctrl + L","Ctrl + K","Ctrl + X","Ctrl + Q"],"Ctrl + L sama dengan perintah clear."),
+ pg(3,"Pada Terminal Linux, shortcut untuk mencari riwayat perintah ke belakang adalah ...",["Ctrl + R","Ctrl + H","Ctrl + F","Ctrl + G"],"Ctrl + R: reverse search."),
+ pg(2,"Tombol Tab pada terminal umumnya berfungsi untuk ...",["Melengkapi nama perintah atau file otomatis","Menutup terminal","Menghapus baris","Menjalankan ulang perintah"],"Tab: autocomplete."),
+ pg(2,"Shortcut untuk membuka Task View (semua jendela dan desktop virtual) adalah ...",["Win + Tab","Alt + Tab","Ctrl + Tab","Shift + Tab"],"Win + Tab membuka Task View."),
+ pg(3,"Shortcut Chrome untuk membuka DevTools adalah ...",["F12","F5","F11","F1"],"F12 atau Ctrl + Shift + I membuka DevTools."),
+ pg(3,"Shortcut untuk membuka layar opsi keamanan (kunci, ganti pengguna, Task Manager) adalah ...",["Ctrl + Alt + Del","Ctrl + Shift + Esc","Alt + F4","Win + L"],"Ctrl + Alt + Del membuka layar opsi keamanan."),
+ pg(2,"Shortcut untuk menampilkan Properties dari file yang dipilih di File Explorer adalah ...",["Alt + Enter","Ctrl + Enter","Shift + Enter","F3"],"Alt + Enter membuka Properties."),
+ pg(2,"Shortcut untuk menghapus satu kata di sebelah kiri kursor adalah ...",["Ctrl + Backspace","Alt + Backspace","Shift + Delete","Ctrl + Home"],"Ctrl + Backspace menghapus kata sebelumnya.")
+ ]
+};
+/* ========== MESIN GAME ========== */
+const $=id=>document.getElementById(id);
+const COLORS=["#ff3d81","#00e5ff","#39ff88","#ffd400"],CN=["Pink","Cyan","Hijau","Kuning"];
+const SP={0:["MULAI","start"],2:["Kesempatan","ch"],4:["Audit Pajak","tax",100],7:["Kesempatan","ch"],10:["Karantina","jv"],20:["Wi-Fi Gratis","free"],22:["Kesempatan","ch"],30:["Ke Karantina","gj"],36:["Kesempatan","ch"],38:["Denda Insiden","tax",150]};
+let np=2,P=[],B=[],cur=0,busy=false,snd=true,over=false,deck=[],rd=1;
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const rc=i=>i<=10?[10,10-i]:i<=20?[20-i,0]:i<=30?[0,i-20]:[i-30,10];
+function mkBoard(){let k=0;B=[];for(let i=0;i<40;i++){const s=SP[i];if(s)B.push({n:s[0],k:s[1],x:s[2]||0});else{const price=Math.round((50+k*11)/10)*10;B.push({n:CONFIG.aset[k++]||"Aset",k:"pr",price,rent:Math.round(price/10),o:-1,l:0})}}}
+const rent=t=>t.rent*(1+t.l);
+function show(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("on"));$(id).classList.add("on")}
+function beep(f,d){if(!snd)return;try{const c=beep.c||(beep.c=new (window.AudioContext||window.webkitAudioContext)());const o=c.createOscillator(),g=c.createGain();o.frequency.value=f;g.gain.value=.08;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+d)}catch(e){}}
+function infoP(t,b){return new Promise(r=>{$("mi-t").textContent=t;$("mi-b").innerHTML=b;$("m-i").classList.add("on");$("mi-ok").onclick=()=>{$("m-i").classList.remove("on");r()}})}
+const HELP="<p>Kocok dua dadu dan jalankan pionmu mengelilingi papan. Tiap pemain mulai dengan <b>"+CONFIG.koinAwal+"</b> koin; melewati MULAI +"+CONFIG.gajiMulai+".</p><p>🖧 <b>Aset belum dimiliki:</b> jawab soal dengan benar untuk membelinya.<br>🖧 <b>Aset milik lawan:</b> bayar sewa; jawab benar = sewa diskon 50%.<br>🖧 <b>Aset milikmu:</b> jawab benar untuk upgrade keamanan (maks. level 3, sewa naik).<br>❓ Kesempatan: kartu acak. 🔒 Karantina: jawab benar untuk bebas, salah = lewati giliran.</p><p>Pemain dengan koin &lt; 0 bangkrut. Permainan selesai setelah <b>"+CONFIG.maxRonde+" ronde</b> atau tersisa satu pemain; pemenang adalah yang kekayaannya (koin + harga aset) terbesar.</p>";
+$("ttl").textContent=$("ttl2").textContent=CONFIG.judul;$("info").textContent=CONFIG.mapel+" · "+CONFIG.materi+" · "+CONFIG.kelas;
+$("b-help").onclick=$("b-h2").onclick=()=>infoP("Petunjuk permainan",HELP);
+$("b-start").onclick=()=>{show("s-setup");drawSetup()};$("b-back").onclick=()=>show("s-home");
+function drawSetup(){
+ $("cnt").innerHTML="";[2,3,4].forEach(n=>{const b=document.createElement("button");b.textContent=n+" pemain";if(n!==np)b.className="gh";b.onclick=()=>{np=n;drawSetup()};$("cnt").appendChild(b)});
+ let sv=[];try{sv=JSON.parse(localStorage.getItem("np-names")||"[]")}catch(e){}
+ const old=[...document.querySelectorAll(".pl input")].map(i=>i.value);$("names").innerHTML="";
+ for(let i=0;i<np;i++){const d=document.createElement("div");d.className="pl";d.innerHTML='<span class="dot" style="background:'+COLORS[i]+';color:'+COLORS[i]+'"></span><input maxlength="14" aria-label="Nama pemain '+(i+1)+'" placeholder="Nama pemain '+(i+1)+' ('+CN[i]+')">';d.querySelector("input").value=old[i]||sv[i]||"";$("names").appendChild(d)}}
+$("b-go").onclick=()=>{const v=[...document.querySelectorAll(".pl input")].map((i,k)=>i.value.trim()||"Pemain "+(k+1));try{localStorage.setItem("np-names",JSON.stringify(v))}catch(e){}
+ P=v.map((n,i)=>({n,c:COLORS[i],pos:0,m:CONFIG.koinAwal,jail:false,out:false,ok:0}));start()};
+/* tampilan */
+function draw(){
+ const bd=$("board");bd.querySelectorAll(".t").forEach(e=>e.remove());
+ B.forEach((t,i)=>{const[r,c]=rc(i),d=document.createElement("div");d.className="t"+(["start","jv","free","gj"].includes(t.k)?" co":"");d.style.gridRow=r+1;d.style.gridColumn=c+1;
+  let bar="",ex="";
+  if(t.k==="pr"){bar='<i class="bar" style="background:hsl('+(Math.floor(i/3)*47)%360+',70%,55%)"></i>';ex=(t.o>=0?"★".repeat(t.l)+" ":"")+t.price;if(t.o>=0)d.style.boxShadow="inset 0 0 0 3px "+P[t.o].c}
+  else if(t.k==="ch")ex="❓";else if(t.k==="tax")ex="-"+t.x;else if(t.k==="start")ex="+"+CONFIG.gajiMulai;else if(t.k==="jv"||t.k==="gj")ex="🔒";else ex="📶";
+  d.innerHTML=bar+"<b>"+t.n+"</b><span>"+ex+'</span><span class="tk">'+P.map(p=>!p.out&&p.pos===i?'<i class="tok" style="background:'+p.c+'"></i>':"").join("")+"</span>";bd.appendChild(d)});
+ $("rd").textContent="Ronde "+rd+"/"+CONFIG.maxRonde;
+ $("pls").innerHTML=P.map((p,i)=>'<div class="pc'+(i===cur?" cur":"")+(p.out?" out":"")+'"><span class="dot" style="display:inline-block;vertical-align:middle;background:'+p.c+';color:'+p.c+'"></span> <b>'+p.n+"</b>"+(p.jail?" 🔒":"")+"<br>💰 "+p.m+" · 🖧 "+B.filter(t=>t.o===i).length+" aset</div>").join("")}
+const msg=t=>$("msg").textContent=t;
+function start(){over=false;busy=false;cur=0;rd=1;deck=[];mkBoard();P.forEach(p=>{p.pos=0;p.m=CONFIG.koinAwal;p.jail=false;p.out=false;p.ok=0});$("die").textContent="🎲";$("b-roll").disabled=false;msg("Giliran "+P[0].n+": kocok dadu!");show("s-game");draw()}
+/* soal */
+function nextQ(){if(!deck.length)deck=sh(CONFIG.soal.map((_,i)=>i));return CONFIG.soal[deck.pop()]}
+function askP(title){const q=nextQ();return new Promise(res=>{let ok=false;
+ $("qlv").textContent=["","Mudah","Sedang","Sulit"][q.l];$("qh").textContent=title;$("qt").textContent=q.q;$("qe").innerHTML="";$("b-next").style.display="none";$("qo").innerHTML="";
+ const opts=q.t==="bs"?["Benar","Salah"]:q.o,ans=q.t==="bs"?(q.a?0:1):q.a;
+ opts.forEach((t,i)=>{const b=document.createElement("button");b.className="opt";b.textContent=t;b.onclick=()=>{
+  [...$("qo").children].forEach((x,k)=>{x.disabled=true;if(k===ans)x.classList.add("ok");else if(k===i)x.classList.add("no")});
+  ok=i===ans;if(ok){P[cur].ok++;beep(880,.25)}else beep(200,.35);
+  $("qe").innerHTML="<p><b>"+(ok?"✅ Benar!":"❌ Belum tepat.")+"</b></p><p>"+q.e+"</p>";$("b-next").style.display=""};$("qo").appendChild(b)});
+ $("b-next").onclick=()=>{$("m-q").classList.remove("on");res(ok)};$("m-q").classList.add("on")})}
+/* giliran */
+$("b-roll").onclick=async()=>{
+ if(busy||over)return;busy=true;$("b-roll").disabled=true;const p=P[cur];
+ if(p.jail){const ok=await askP("🔒 Karantina: jawab benar untuk bebas");if(ok){p.jail=false;msg("Bebas dari karantina!")}else{await infoP("Tetap di karantina","Giliran dilewati.");return endTurn()}}
+ let a=0,b=0;for(let i=0;i<8;i++){a=1+Math.floor(Math.random()*6);b=1+Math.floor(Math.random()*6);$("die").textContent="🎲 "+a+" + "+b;beep(300+i*40,.05);await sleep(70)}
+ $("die").textContent=a+" + "+b+" = "+(a+b);msg(p.n+" maju "+(a+b)+" langkah");
+ for(let i=0;i<a+b;i++){p.pos=(p.pos+1)%40;if(p.pos===0){p.m+=CONFIG.gajiMulai;beep(900,.2)}draw();beep(500,.05);await sleep(180)}
+ await land(p);if(!over)endTurn()};
+function bust(p,i){p.out=true;B.forEach(t=>{if(t.o===i){t.o=-1;t.l=0}})}
+const CARDS=[["Hadiah audit keamanan lulus: +150",async p=>p.m+=150],["Lupa logout dan akun disalahgunakan: −100",async p=>p.m-=100],["Backup berhasil memulihkan data: +80",async p=>p.m+=80],["Terkena ransomware: −150",async p=>p.m-=150],["Maju ke MULAI dan terima gaji",async p=>{p.pos=0;p.m+=CONFIG.gajiMulai}],["Terdeteksi akses ilegal: masuk Karantina",async p=>{p.pos=10;p.jail=true}],["Tantangan bonus: jawab benar +120",async p=>{if(await askP("Tantangan bonus"))p.m+=120}]];
+async function land(p){
+ const i=cur,t=B[p.pos];
+ if(t.k==="pr"){
+  if(t.o<0){const ok=await askP("Beli "+t.n+" ("+t.price+" 💰)?");
+   if(!ok)await infoP("Gagal membeli","Jawaban belum tepat, aset tidak dibeli.");
+   else if(p.m<t.price)await infoP("Koin kurang","Jawaban benar, tetapi koinmu belum cukup.");
+   else{p.m-=t.price;t.o=i;beep(700,.3);await infoP("Aset dibeli!",t.n+" kini milikmu.")}}
+  else if(t.o===i){if(t.l>=3)await infoP("Level maksimal",t.n+" sudah level 3.");
+   else if(await askP("Upgrade keamanan "+t.n)){t.l++;await infoP("Upgrade berhasil!","Level "+t.l+". Sewa kini "+rent(t)+" 💰.")}
+   else await infoP("Upgrade gagal","Jawaban belum tepat.")}
+  else{const r=rent(t),ok=await askP("Sewa "+r+" 💰 ke "+P[t.o].n+". Jawab benar = diskon 50%"),pay=ok?Math.floor(r/2):r;p.m-=pay;P[t.o].m+=pay;await infoP("Bayar sewa",p.n+" membayar "+pay+" 💰 ke "+P[t.o].n+".")}
+ }else if(t.k==="ch"){const c=CARDS[Math.floor(Math.random()*CARDS.length)];await infoP("❓ Kesempatan",c[0]);await c[1](p)}
+ else if(t.k==="tax"){p.m-=t.x;await infoP("🧾 "+t.n,"Bayar "+t.x+" 💰.")}
+ else if(t.k==="gj"){p.pos=10;p.jail=true;await infoP("🔒 Karantina","Aktivitas mencurigakan! Kamu dikarantina. Giliran berikutnya, jawab benar untuk bebas.")}
+ draw();
+ if(p.m<0){await infoP("💥 Bangkrut",p.n+" kehabisan koin dan keluar dari permainan.");bust(p,i);draw()}}
+function endTurn(){busy=false;if(P.filter(x=>!x.out).length<=1)return fin();
+ let n=cur;do{n=(n+1)%P.length}while(P[n].out);
+ if(n<=cur){rd++;if(rd>CONFIG.maxRonde)return fin()}
+ cur=n;draw();$("b-roll").disabled=false;msg("Giliran "+P[cur].n+": kocok dadu!")}
+function fin(){over=true;$("b-roll").disabled=true;draw();
+ const w=P.map((p,i)=>({p,v:p.out?-1:p.m+B.filter(t=>t.o===i).reduce((s,t)=>s+t.price,0)})).sort((a,b)=>b.v-a.v);
+ beep(988,.5);for(let i=0;i<90;i++){const c=document.createElement("i");c.className="conf";c.style.left=Math.random()*100+"vw";c.style.background=COLORS[i%4];c.style.animationDelay=Math.random()*1.2+"s";document.body.appendChild(c);setTimeout(()=>c.remove(),5000)}
+ infoP("🏆 "+w[0].p.n+" menang!","<p>Peringkat (koin + nilai aset):<br>"+w.map((x,i)=>(i+1)+". "+x.p.n+" — "+(x.v<0?"bangkrut":x.v+" 💰")+" · soal benar: "+x.p.ok).join("<br>")+"</p>")}
+$("b-snd").onclick=()=>{snd=!snd;$("b-snd").textContent=snd?"🔊 Suara":"🔇 Senyap"};
+$("b-re").onclick=()=>{if(confirm("Ulangi permainan dari awal?")){$("m-q").classList.remove("on");$("m-i").classList.remove("on");start()}};
+$("b-exit").onclick=()=>{if(confirm("Keluar ke halaman awal?")){$("m-q").classList.remove("on");$("m-i").classList.remove("on");over=true;show("s-home")}};
+</script></body></html>
